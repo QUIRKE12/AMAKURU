@@ -8,3 +8,39 @@
  */
 export type UserRole = "Admin" | "Editor" | "Author" | "Moderator" | "Subscriber";
 export type SupportedLanguage = "en" | "fr" | "rn";
+
+export interface CategorySummary {
+  _id: string;
+  slug: string;
+  name: string;
+  colorDot: string;
+  description?: string;
+}
+
+export interface CoverImage {
+  _id: string;
+  url: string;
+  secureUrl: string;
+  altText?: string;
+}
+
+export interface ArticleSummary {
+  _id: string;
+  slug: string;
+  title: string;
+  dek: string;
+  category?: CategorySummary;
+  coverImage?: CoverImage;
+  author?: { name: string; avatarUrl?: string };
+  readTimeMinutes: number;
+  publishedAt?: string;
+  createdAt: string;
+  isBreaking: boolean;
+  isFeatured: boolean;
+  views: number;
+}
+
+export interface ArticleDetail extends ArticleSummary {
+  body: string;
+  tags?: { _id: string; name: string; slug: string }[];
+}
