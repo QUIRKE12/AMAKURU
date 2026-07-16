@@ -7,17 +7,17 @@ import { useAuthUser } from "@/lib/hooks/useAuthUser";
 type QueueComment = {
   _id: string;
   content: string;
-  status: "pending" | "approved" | "flagged" | "rejected";
+  status: "approved" | "hidden" | "deleted";
   createdAt: string;
   author: { name: string; email: string };
   article: { title: string; slug: string };
 };
 
-const TABS = ["pending", "flagged", "approved", "rejected"] as const;
+const TABS = ["approved", "hidden", "deleted", "all"] as const;
 
 export default function ModerationQueue() {
   const { authedFetch } = useAuthUser();
-  const [tab, setTab] = useState<(typeof TABS)[number]>("pending");
+  const [tab, setTab] = useState<(typeof TABS)[number]>("approved");
   const [comments, setComments] = useState<QueueComment[]>([]);
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState<string | null>(null);
@@ -37,7 +37,7 @@ export default function ModerationQueue() {
     load();
   }, [load]);
 
-  async function act(id: string, action: "approved" | "rejected" | "delete") {
+  async function act(id: string, action: "approved" | "hidden" | "delete") {
     setBusyId(id);
     try {
       if (action === "delete") {
@@ -95,13 +95,13 @@ export default function ModerationQueue() {
                   Approve
                 </button>
               )}
-              {tab !== "rejected" && (
+              {tab !== "hidden" && (
                 <button
-                  onClick={() => act(c._id, "rejected")}
+                  onClick={() => act(c._id, "hidden")}
                   disabled={busyId === c._id}
                   className="text-slate-500 hover:text-slate-800"
                 >
-                  Reject
+                  Hide
                 </button>
               )}
               <button
