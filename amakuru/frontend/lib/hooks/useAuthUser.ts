@@ -72,6 +72,14 @@ export function useAuthUser(): AuthUserState {
     const idToken = await auth.currentUser?.getIdToken();
     const headers = new Headers(init.headers);
     if (idToken) headers.set("Authorization", `Bearer ${idToken}`);
+    // Every call site in this app that sends a body passes a raw JSON
+    // string without setting Content-Type — without it, the backend's
+    // express.json() middleware won't parse the body at all, so PATCH/POST
+    // requests would silently arrive as an empty req.body. Default it here
+    // once instead of patching every call site.
+    if (init.body && !headers.has("Content-Type")) {
+      headers.set("Content-Type", "application/json");
+    }
     return fetch(apiUrl(input), { ...init, headers });
   }, []);
 
