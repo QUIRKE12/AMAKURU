@@ -51,6 +51,7 @@ export default function CommentThread({ articleId }: { articleId: string }) {
     try {
       await authedFetch(`/api/articles/${articleId}/comments`, {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ content: newComment.trim() }),
       });
       setNewComment("");

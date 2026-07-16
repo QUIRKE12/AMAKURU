@@ -7,7 +7,7 @@ import { useAuthUser } from "@/lib/hooks/useAuthUser";
 export type CommentNode = {
   _id: string;
   content: string;
-  status: "pending" | "approved" | "flagged" | "rejected";
+  status: "approved" | "hidden" | "deleted";
   createdAt: string;
   author: { _id: string; name: string; avatarUrl?: string };
   replies: CommentNode[];
@@ -22,9 +22,8 @@ type Props = {
 
 const STATUS_STYLES: Record<CommentNode["status"], string> = {
   approved: "",
-  pending: "border-l-2 border-amber-400 pl-3",
-  flagged: "border-l-2 border-red-400 pl-3",
-  rejected: "border-l-2 border-slate-300 pl-3 opacity-50",
+  hidden: "border-l-2 border-amber-400 pl-3 opacity-60",
+  deleted: "border-l-2 border-slate-300 pl-3 opacity-40",
 };
 
 export default function CommentItem({ comment, articleId, depth = 0, onChanged }: Props) {
@@ -76,7 +75,7 @@ export default function CommentItem({ comment, articleId, depth = 0, onChanged }
     }
   }
 
-  if (comment.status === "rejected" && !canModerate) return null;
+  if (comment.status === "deleted" && !canModerate) return null;
 
   return (
     <div className={`py-3 ${STATUS_STYLES[comment.status]}`} style={{ marginLeft: depth * 24 }}>
@@ -105,9 +104,9 @@ export default function CommentItem({ comment, articleId, depth = 0, onChanged }
             Approve
           </button>
         )}
-        {canModerate && comment.status !== "rejected" && (
-          <button onClick={() => updateStatus("rejected")} disabled={busy} className="text-slate-500 hover:text-slate-800">
-            Reject
+        {canModerate && comment.status !== "hidden" && (
+          <button onClick={() => updateStatus("hidden")} disabled={busy} className="text-slate-500 hover:text-slate-800">
+            Hide
           </button>
         )}
       </div>

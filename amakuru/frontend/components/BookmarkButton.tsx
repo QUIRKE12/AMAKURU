@@ -27,10 +27,10 @@ export default function BookmarkButton({
       if (next) {
         await authedFetch("/api/bookmarks", {
           method: "POST",
-          body: JSON.stringify({ articleId }),
+          body: JSON.stringify({ article: articleId }),
         });
       } else {
-        await authedFetch(`/api/bookmarks?articleId=${articleId}`, { method: "DELETE" });
+        await authedFetch(`/api/bookmarks?article=${articleId}`, { method: "DELETE" });
       }
     } catch {
       setBookmarked(!next); // revert on failure
