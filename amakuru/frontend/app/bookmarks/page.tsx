@@ -1,22 +1,23 @@
-// NEW — Phase 4
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { useAuthUser } from "@/lib/hooks/useAuthUser";
-import BookmarkButton from "@/components/BookmarkButton";
+import SiteChrome from "@/components/site/SiteChrome";
+import ArticleCard from "@/components/site/ArticleCard";
+import type { ArticleSummary } from "@/lib/types";
 
-type BookmarkedArticle = {
+type Bookmark = {
   _id: string;
-  article: { _id: string; title: string; slug: string; coverImageUrl?: string; excerpt?: string };
+  article: ArticleSummary;
 };
 
 export default function BookmarksPage() {
-  const { profile: user, authedFetch } = useAuthUser();
-  const [bookmarks, setBookmarks] = useState<BookmarkedArticle[]>([]);
+  const { profile: user, authedFetch, loading: authLoading } = useAuthUser();
+  const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (authLoading) return;
     if (!user) {
       setLoading(false);
       return;
@@ -24,37 +25,29 @@ export default function BookmarksPage() {
     (async () => {
       const res = await authedFetch("/api/bookmarks");
       const data = await res.json();
-      setBookmarks(data.bookmarks ?? data);
+      setBookmarks(data.bookmarks ?? []);
       setLoading(false);
     })();
-  }, [user, authedFetch]);
-
-  if (!user) {
-    return <p className="mx-auto max-w-2xl px-4 py-12 text-slate-600">Sign in to see the articles you've saved.</p>;
-  }
+  }, [user, authLoading, authedFetch]);
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-8">
-      <h1 className="text-xl font-semibold text-slate-900">Saved Articles</h1>
+    <SiteChrome>
+      <div className="mx-auto max-w-6xl px-4 py-9 sm:px-6">
+        <div className="mb-7 border-b-[3px] border-ink pb-4">
+          <span className="font-mono text-xs uppercase tracking-wide text-muted">Your library</span>
+          <h1 className="font-display text-[34px] font-semibold text-ink">Saved Articles</h1>
+        </div>
 
-      {loading && <p className="mt-6 text-sm text-slate-400">Loading…</p>}
+        {!authLoading && !user && (
+          <p className="py-16 text-center font-mono text-sm text-muted">Sign in to see the articles you've saved.</p>
+        )}
 
-      {!loading && bookmarks.length === 0 && (
-        <p className="mt-6 text-sm text-slate-500">
-          Nothing saved yet. Tap "Save" on any article to find it here later.
-        </p>
-      )}
+        {loading && user && <p className="py-16 text-center font-mono text-sm text-muted">Loading…</p>}
 
-      <div className="mt-6 divide-y divide-slate-100">
-        {bookmarks.map((b) => (
-          <div key={b._id} className="flex items-center justify-between py-4">
-            <Link href={`/articles/${b.article.slug}`} className="text-slate-900 hover:underline">
-              {b.article.title}
-            </Link>
-            <BookmarkButton articleId={b.article._id} initialBookmarked />
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
+        {!loading && user && bookmarks.length === 0 && (
+          <p className="py-16 text-center font-mono text-sm text-muted">
+            Nothing saved yet. Tap "Save" on any article to find it here later.
+          </p>
+        )}
+
+        {!loading && bookmarks.length > 0 && (
