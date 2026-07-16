@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { signOut } from "firebase/auth";
+import { auth } from "@/lib/firebase/client";
 import { useAuthUser } from "@/lib/hooks/useAuthUser";
 
 const STAFF_ROLES = ["Admin", "Editor", "Author"];
@@ -76,6 +78,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           Signed in as
           <div className="mt-1 font-medium text-charcoal">{profile.name}</div>
           <div>{profile.role}</div>
+          <button
+            onClick={() => signOut(auth)}
+            className="mt-3 w-full rounded border border-ink px-3 py-1.5 text-xs font-semibold text-ink hover:bg-ink hover:text-white"
+          >
+            Sign out
+          </button>
         </div>
       </aside>
       <main className="min-w-0 flex-1 p-8">{children}</main>
