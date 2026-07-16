@@ -20,9 +20,11 @@ router.get("/", async (_req: Request, res: Response) => {
   res.json({ categories });
 });
 
-// GET /api/categories/:id — public
+// GET /api/categories/:id — public. :id may be an ObjectId or the category's slug.
 router.get("/:id", async (req: Request, res: Response) => {
-  const category = await Category.findById(req.params.id);
+  const isObjectId = /^[0-9a-fA-F]{24}$/.test(req.params.id);
+  const lookup = isObjectId ? { _id: req.params.id } : { slug: req.params.id };
+  const category = await Category.findOne(lookup);
   if (!category) return res.status(404).json({ error: "Category not found" });
   res.json({ category });
 });
