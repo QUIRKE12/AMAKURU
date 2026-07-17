@@ -6,14 +6,72 @@ import { usePathname } from "next/navigation";
 import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase/client";
 import { useAuthUser } from "@/lib/hooks/useAuthUser";
-import { Newspaper, Image as ImageIcon, MessagesSquare, Menu, LogOut } from "lucide-react";
+import {
+  LayoutDashboard,
+  LineChart,
+  Newspaper,
+  Tags,
+  Image as ImageIcon,
+  MessagesSquare,
+  Bell,
+  Mail,
+  Megaphone,
+  Users,
+  ScrollText,
+  Settings as SettingsIcon,
+  Menu,
+  LogOut,
+} from "lucide-react";
 
-const STAFF_ROLES = ["Admin", "Editor", "Author"];
+const STAFF_ROLES = ["Admin", "Editor", "Author", "Moderator"];
+const ADMIN_ONLY = ["Admin"];
 
-const NAV_ITEMS = [
-  { href: "/admin/articles", label: "Articles", icon: Newspaper },
-  { href: "/admin/media", label: "Media Library", icon: ImageIcon },
-  { href: "/admin/moderation", label: "Moderation", icon: MessagesSquare },
+interface NavItem {
+  href: string;
+  label: string;
+  icon: typeof LayoutDashboard;
+  /** Roles allowed to see this item; omit for "any staff role". */
+  roles?: string[];
+}
+
+interface NavSection {
+  label: string;
+  items: NavItem[];
+}
+
+const NAV_SECTIONS: NavSection[] = [
+  {
+    label: "Overview",
+    items: [
+      { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
+      { href: "/admin/analytics", label: "Analytics", icon: LineChart },
+    ],
+  },
+  {
+    label: "Content",
+    items: [
+      { href: "/admin/articles", label: "Articles", icon: Newspaper },
+      { href: "/admin/categories", label: "Categories & Tags", icon: Tags },
+      { href: "/admin/media", label: "Media Library", icon: ImageIcon },
+      { href: "/admin/moderation", label: "Comments", icon: MessagesSquare },
+    ],
+  },
+  {
+    label: "Engagement",
+    items: [
+      { href: "/admin/notifications", label: "Notifications", icon: Bell },
+      { href: "/admin/newsletter", label: "Newsletters", icon: Mail },
+      { href: "/admin/ads", label: "Advertisements", icon: Megaphone },
+    ],
+  },
+  {
+    label: "System",
+    items: [
+      { href: "/admin/users", label: "Users & Roles", icon: Users, roles: ADMIN_ONLY },
+      { href: "/admin/audit-log", label: "Audit Log", icon: ScrollText, roles: ADMIN_ONLY },
+      { href: "/admin/settings", label: "Settings", icon: SettingsIcon, roles: ADMIN_ONLY },
+    ],
+  },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -90,30 +148,43 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </div>
 
         <nav className="flex-1 overflow-y-auto px-3 py-4">
-          <div className="mb-2 px-2 text-[10px] uppercase tracking-widest text-white/40">
-            Menu
-          </div>
-          <div className="flex flex-col gap-1">
-            {NAV_ITEMS.map((item) => {
-              const active = pathname?.startsWith(item.href);
-              const Icon = item.icon;
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={() => setSidebarOpen(false)}
-                  className={`flex items-center gap-2.5 rounded-lg border-l-[3px] px-3 py-2.5 text-[13.5px] font-medium transition-colors ${
-                    active
-                      ? "border-amber bg-amber/15 text-amber"
-                      : "border-transparent text-white/60 hover:bg-white/5 hover:text-white"
-                  }`}
-                >
-                  <Icon size={17} strokeWidth={2} className="shrink-0" />
-                  {item.label}
-                </Link>
-              );
-            })}
-          </div>
+          {NAV_SECTIONS.map((section) => {
+            const visibleItems = section.items.filter(
+              (item) => !item.roles || item.roles.includes(profile.role)
+            );
+            if (visibleItems.length === 0) return null;
+            return (
+              <div key={section.label} className="mb-1">
+                <div className="mb-2 mt-4 px-2 text-[10px] font-bold uppercase tracking-widest text-white/40 first:mt-0">
+                  {section.label}
+                </div>
+                <div className="flex flex-col gap-1">
+                  {visibleItems.map((item) => {
+                    const active =
+                      item.href === "/admin"
+                        ? pathname === "/admin"
+                        : pathname?.startsWith(item.href);
+                    const Icon = item.icon;
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        onClick={() => setSidebarOpen(false)}
+                        className={`flex items-center gap-2.5 rounded-lg border-l-[3px] px-3 py-2.5 text-[13.5px] font-medium transition-colors ${
+                          active
+                            ? "border-teal bg-teal/15 text-teal"
+                            : "border-transparent text-white/60 hover:bg-white/5 hover:text-white"
+                        }`}
+                      >
+                        <Icon size={17} strokeWidth={2} className="shrink-0" />
+                        {item.label}
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
         </nav>
 
         <div className="border-t border-white/10 p-3">
