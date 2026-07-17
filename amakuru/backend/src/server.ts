@@ -3,7 +3,6 @@ import express from "express";
 import cors from "cors";
 import "express-async-errors"; // lets async route handler rejections reach the error middleware below (Express 4 doesn't do this on its own)
 import { connectToDatabase } from "./config/db";
-
 import adsRoutes from "./routes/ads";
 import articlesRoutes from "./routes/articles";
 import authRoutes from "./routes/auth";
@@ -15,14 +14,11 @@ import newsletterRoutes from "./routes/newsletter";
 import notificationsRoutes from "./routes/notifications";
 import settingsRoutes from "./routes/settings";
 import tagsRoutes from "./routes/tags";
-
+import usersRoutes from "./routes/users";
 const app = express();
-
 app.use(cors({ origin: process.env.FRONTEND_ORIGIN?.split(",") ?? "*" }));
 app.use(express.json());
-
 app.get("/health", (_req, res) => res.json({ ok: true }));
-
 app.use("/api/ads", adsRoutes);
 app.use("/api/articles", articlesRoutes);
 app.use("/api/auth", authRoutes);
@@ -34,7 +30,7 @@ app.use("/api/newsletter", newsletterRoutes);
 app.use("/api/notifications", notificationsRoutes);
 app.use("/api/settings", settingsRoutes);
 app.use("/api/tags", tagsRoutes);
-
+app.use("/api/users", usersRoutes);
 // Basic error handler — catches anything thrown inside async route handlers
 // that wasn't already caught (zod parsing/db calls above mostly handle
 // their own errors, but this is the last line of defense).
@@ -42,9 +38,7 @@ app.use((err: any, _req: express.Request, res: express.Response, _next: express.
   console.error("[unhandled]", err);
   res.status(500).json({ error: "Internal server error" });
 });
-
 const PORT = process.env.PORT || 4000;
-
 connectToDatabase()
   .then(() => {
     app.listen(PORT, () => console.log(`[server] amakuru API listening on :${PORT}`));
